@@ -99,9 +99,23 @@ static struct note victorytwo[150] = {
 };
 
 
+void
+old_wait_avr(unsigned short msec)
+{
+	TCCR0 = 3;
+	while (msec--) {
+		TCNT0 = (unsigned char)(256 - (XTAL_FRQ / 64) * 0.001);
+		SET_BIT(TIFR, TOV0);
+		WDR();
+		while (!GET_BIT(TIFR, TOV0));
+	}
+	TCCR0 = 0;
+}
+
 int main(void)
 {
-	wait_avr(1000);
+	old_wait_avr(1000); 
+	
 	MCUCSR = (1<<JTD);
 	MCUCSR = (1<<JTD);
 		
@@ -121,6 +135,7 @@ int main(void)
 		
 		if (GET_BIT(PINA, 1)){
 			PORTA = 1;
+			old_wait_avr(150);
 			for (int i = 0; i < 161; i++){
 				play_note(victory[i].freq, victory[i].duration);
 			}
